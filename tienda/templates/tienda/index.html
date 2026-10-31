@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Puerto Simple - Venta rápida</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f3f3f0; margin: 0; color: #222; }
+        header { background: #1c1c1c; color: white; padding: 14px 30px; display: flex; justify-content: space-between; align-items: center; }
+        header h1 { font-size: 20px; margin: 0; }
+        main { max-width: 1100px; margin: 20px auto; padding: 0 20px; }
+        .pasos { display: flex; gap: 10px; margin-bottom: 20px; }
+        .paso { flex: 1; background: white; border: 2px solid #ddd; border-radius: 8px; padding: 10px; text-align: center; font-size: 14px; }
+        .paso b { display: block; font-size: 12px; color: #777; }
+        .resumen { display: flex; gap: 15px; margin-bottom: 20px; }
+        .tarjeta { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 15px; flex: 1; }
+        .tarjeta .num { font-size: 26px; font-weight: bold; }
+        .columnas { display: flex; gap: 20px; align-items: flex-start; }
+        .columnas > div { flex: 1; }
+        .caja { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 18px; margin-bottom: 20px; }
+        h2 { margin-top: 0; font-size: 18px; }
+        table { border-collapse: collapse; width: 100%; font-size: 14px; }
+        th, td { border-bottom: 1px solid #e5e5e5; padding: 8px; text-align: left; }
+        th { color: #666; font-size: 12px; text-transform: uppercase; }
+        input[type=number] { width: 80px; padding: 6px; font-size: 15px; }
+        button { padding: 10px 18px; border-radius: 6px; border: 1px solid #1c1c1c; cursor: pointer; font-size: 14px; background: white; }
+        .principal { background: #1c1c1c; color: white; font-size: 16px; }
+        .fila-botones { margin-top: 12px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .error { background: #fde2e2; border: 1px solid #e99; padding: 12px; border-radius: 6px; margin-bottom: 15px; }
+        .ok { background: #e3f6e3; border: 1px solid #9c9; padding: 12px; border-radius: 6px; margin-bottom: 15px; }
+        .bajo { color: #b00020; font-weight: bold; }
+        .etiqueta-bajo { background: #fde2e2; color: #b00020; padding: 2px 8px; border-radius: 10px; font-size: 12px; font-weight: bold; }
+        .etiqueta-ok { background: #e8e8e8; padding: 2px 8px; border-radius: 10px; font-size: 12px; }
+        .alerta { background: #fff4d6; border: 2px solid #e0a800; padding: 12px; border-radius: 6px; margin-top: 10px; }
+        .nota { color: #777; font-size: 13px; }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Puerto Simple · Venta rápida</h1>
+    <form action="{% url 'reiniciar' %}" style="margin:0">
+        <button type="submit">↺ Reiniciar datos de demostración</button>
+    </form>
+</header>
+
+<main>
+    <div class="pasos">
+        <div class="paso"><b>1. ENTRADA</b>Escribir cantidades</div>
+        <div class="paso"><b>2. PROCESAMIENTO</b>Validar stock, calcular total y descontar</div>
+        <div class="paso"><b>3. SALIDA</b>Resultado y alerta de stock</div>
+    </div>
+
+    <div class="resumen">
+        <div class="tarjeta"><div class="nota">Ventas de hoy</div><div class="num">${{ ventas_hoy }}</div><div class="nota">{{ historial|length }} venta(s) registrada(s)</div></div>
+        <div class="tarjeta"><div class="nota">Productos con stock bajo</div><div class="num {% if bajos %}bajo{% endif %}">{{ bajos|length }}</div></div>
+    </div>
+
+    <div class="columnas">
+        <div>
+            <div class="caja">
+                <h2>1. Entrada: registrar venta</h2>
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    <table>
+                        <tr><th>Producto</th><th>Precio</th><th>Stock</th><th>Estado</th><th>Cantidad</th></tr>
+                        {% for p in productos %}
+                        <tr>
+                            <td>{{ p.nombre }}</td>
+                            <td>${{ p.precio }}</td>
+                            <td>{{ p.stock }} <span class="nota">(mín. {{ p.minimo }})</span></td>
+                            <td>{% if p.stock < p.minimo %}<span class="etiqueta-bajo">Stock bajo</span>{% else %}<span class="etiqueta-ok">Disponible</span>{% endif %}</td>
+                            <td><input type="number" class="cantidad" id="cantidad_{{ p.id }}" name="cantidad_{{ p.id }}" value="0"></td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                    <div class="fila-botones">
+                        <button type="submit" class="principal">Confirmar venta</button>
+                        <button type="button" onclick="cargarCaso(1)">Cargar Caso 1</button>
+                        <button type="button" onclick="cargarCaso(2)">Cargar Caso 2</button>
+                    </div>
+                    <p class="nota">Los botones "Cargar Caso" solo llenan las cantidades para la demostración; la venta se procesa al confirmar.</p>
+                </form>
+            </div>
+        </div>
+
+        <div>
+            <div class="caja">
+                <h2>2 y 3. Procesamiento y resultado</h2>
+                {% if error %}
+                    <div class="error"><b>Venta rechazada.</b> {{ error }}</div>
+                {% endif %}
+                {% if resultado %}
+                    <div class="ok">
+                        <b>Venta completada</b> · Total: <b>${{ resultado.total }}</b>
+                        <table>
+                            <tr><th>Producto</th><th>Antes</th><th>Vendido</th><th>Ahora</th><th>Estado</th></tr>
+                            {% for l in resultado.lineas %}
+                            <tr>
+                                <td>{{ l.nombre }}</td><td>{{ l.antes }}</td><td>-{{ l.vendido }}</td><td><b>{{ l.ahora }}</b></td>
+                                <td>{% if l.alerta %}<span class="etiqueta-bajo">Stock bajo</span>{% else %}<span class="etiqueta-ok">Disponible</span>{% endif %}</td>
+                            </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                {% endif %}
+                {% if not error and not resultado %}
+                    <p class="nota">Aquí aparecerá el resultado de la venta.</p>
+                {% endif %}
+
+                {% for p in bajos %}
+                    <div class="alerta">⚠ <b>Alerta de stock:</b> {{ p.nombre }} tiene {{ p.stock }} unidades (mínimo {{ p.minimo }}). Conviene reponer.</div>
+                {% endfor %}
+            </div>
+
+            <div class="caja">
+                <h2>Historial de ventas</h2>
+                {% if historial %}
+                    <table>
+                        <tr><th>Hora</th><th>Productos</th><th>Total</th></tr>
+                        {% for v in historial %}
+                        <tr>
+                            <td>{{ v.hora }}</td>
+                            <td>{% for l in v.lineas %}{{ l.vendido }} × {{ l.nombre }}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
+                            <td>${{ v.total }}</td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                {% else %}
+                    <p class="nota">Todavía no hay ventas.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    // Solo para la demostración: llena las cantidades de cada caso de prueba
+    function cargarCaso(numero) {
+        document.querySelectorAll('.cantidad').forEach(function (c) { c.value = 0; });
+        if (numero === 1) {
+            document.getElementById('cantidad_1').value = 2;   // Café x2
+            document.getElementById('cantidad_2').value = 1;   // Taza x1
+        } else {
+            document.getElementById('cantidad_1').value = 10;  // Café x10 (más que el stock)
+        }
+    }
+</script>
+</body>
+</html>
