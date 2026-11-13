@@ -78,6 +78,6 @@ class AjusteForm(forms.Form):
 
 class CargaForm(forms.Form):
     tipo = forms.ChoiceField(label="¿Qué vas a subir?", choices=[
-        ("factura", "Factura o boleta de compra (foto o PDF)"),
+        ("factura", "Factura de compra (XML o PDF digital)"),
         ("catalogo", "Catálogo anterior (Excel o CSV)")])
     archivo = forms.FileField(label="Archivo")

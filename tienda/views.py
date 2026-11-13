@@ -16,7 +16,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from . import servicios
-from .facturas import ErrorLectura, a_entero, leer_factura, leer_tabla
+from .facturas import ErrorLectura, a_entero, leer_factura_auto, leer_tabla
 from .forms import (AjusteForm, CargaForm, ComercioForm, ProductoForm, RegistroForm, VendedorForm)
 from .models import (AlertaStock, CargaCatalogo, CierreCaja, Comercio, DetalleCarga, MovimientoInventario,
                      Perfil, Producto, SolicitudReposicion, Venta)
@@ -353,7 +353,7 @@ def cargas(request):
     if request.method == "POST" and form.is_valid():
         archivo, tipo = form.cleaned_data["archivo"], form.cleaned_data["tipo"]
         ext = archivo.name.rsplit(".", 1)[-1].lower()
-        permitidas = ["jpg", "jpeg", "png", "webp", "gif", "pdf"] if tipo == "factura" else ["csv", "xlsx"]
+        permitidas = ["xml", "pdf"] if tipo == "factura" else ["csv", "xlsx"]
         if ext not in permitidas:
             messages.error(request, "Formato no permitido. Usa: " + ", ".join(permitidas).upper() + ".")
             return redirect("cargas")
@@ -361,8 +361,9 @@ def cargas(request):
                                              nombre_archivo=archivo.name[:200], formato="factura" if tipo == "factura" else ext)
         if tipo == "factura":
             try:
-                lineas = leer_factura(carga.archivo.path, archivo.name)
-                messages.success(request, f"Se leyeron {len(lineas)} productos de la factura. Revísalos y completa el precio de venta.")
+                lineas, metodo = leer_factura_auto(carga.archivo.path, archivo.name)
+                origen = {"xml": "del XML de la factura electrónica", "pdf": "del texto del PDF"}[metodo]
+                messages.success(request, f"Se leyeron {len(lineas)} productos {origen}. Revísalos y completa el precio de venta.")
             except ErrorLectura as e:
                 lineas = []
                 messages.warning(request, f"{e} Puedes ingresar los productos manualmente en la siguiente pantalla.")

@@ -14,6 +14,28 @@ from .models import (AlertaStock, CargaCatalogo, CierreCaja, Comercio, Movimient
 
 MEDIA = tempfile.mkdtemp()
 
+XML_FACTURA = """<?xml version="1.0" encoding="ISO-8859-1"?>
+<DTE xmlns="http://www.sii.cl/SiiDte" version="1.0"><Documento ID="F1"><Encabezado><IdDoc><TipoDTE>33</TipoDTE></IdDoc></Encabezado>
+<Detalle><NroLinDet>1</NroLinDet><CdgItem><TpoCodigo>INT1</TpoCodigo><VlrCodigo>CAF-500</VlrCodigo></CdgItem><NmbItem>Caf\xe9 molido Costa 500 g</NmbItem><QtyItem>10.000000</QtyItem><PrcItem>6000</PrcItem><MontoItem>60000</MontoItem></Detalle>
+<Detalle><NroLinDet>2</NroLinDet><NmbItem>Az\xfacar 1 kg</NmbItem><QtyItem>20</QtyItem><MontoItem>21000</MontoItem></Detalle>
+</Documento></DTE>""".encode("latin-1")
+
+
+def pdf_simple(lineas):
+    """Crea un PDF mínimo con texto (solo para las pruebas)."""
+    cont = "BT /F1 11 Tf 50 750 Td 14 TL " + " ".join(f"({l}) Tj T*" for l in lineas) + " ET"
+    objs = [b"<< /Type /Catalog /Pages 2 0 R >>", b"<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+            b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>",
+            f"<< /Length {len(cont)} >>\nstream\n{cont}\nendstream".encode(), b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>"]
+    out, pos = b"%PDF-1.4\n", []
+    for i, o in enumerate(objs, 1):
+        pos.append(len(out)); out += f"{i} 0 obj\n".encode() + o + b"\nendobj\n"
+    xref = len(out)
+    out += f"xref\n0 {len(objs) + 1}\n0000000000 65535 f \n".encode()
+    for p in pos:
+        out += f"{p:010d} 00000 n \n".encode()
+    return out + f"trailer\n<< /Size {len(objs) + 1} /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF".encode()
+
 
 def crear_comercio(nombre="Puerto Simple", usuario="ana", rol="admin"):
     c = Comercio.objects.create(nombre=nombre)
@@ -101,17 +123,45 @@ class AppTests(TestCase):
         self.assertContains(self.client.get(reverse("compras")), "Reposición recibida")
 
     # ---- facturas y catálogo
-    def test_parsear_respuesta_ia(self, _):
-        texto = '```json\n{"productos":[{"sku":"X1","nombre":"Azúcar 1 kg","cantidad":"20","costo_unitario":"1.050"}]}\n```'
-        self.assertEqual(facturas.parsear_respuesta(texto), [{"sku": "X1", "nombre": "Azúcar 1 kg", "cantidad": 20, "costo_unitario": 1050}])
+    def test_leer_xml_factura_electronica(self, _):
+        ruta = tempfile.mktemp(suffix=".xml"); open(ruta, "wb").write(XML_FACTURA)
+        self.assertEqual(facturas.leer_xml(ruta), [
+            {"sku": "CAF-500", "nombre": "Café molido Costa 500 g", "cantidad": 10, "costo_unitario": 6000},
+            {"sku": "", "nombre": "Azúcar 1 kg", "cantidad": 20, "costo_unitario": 1050}])   # precio calculado: 21000 / 20
+        malo = tempfile.mktemp(suffix=".xml"); open(malo, "wb").write(b'<?xml version="1.0"?><!DOCTYPE x [<!ENTITY a "b">]><x/>')
         with self.assertRaises(facturas.ErrorLectura):
-            facturas.parsear_respuesta("no hay json")
+            facturas.leer_xml(malo)
+        roto = tempfile.mktemp(suffix=".xml"); open(roto, "wb").write(b"<a><b></a>")
+        with self.assertRaises(facturas.ErrorLectura):
+            facturas.leer_xml(roto)
+
+    def test_leer_pdf_digital(self, _):
+        ruta = tempfile.mktemp(suffix=".pdf")
+        open(ruta, "wb").write(pdf_simple(["FACTURA ELECTRONICA N 123 DISTRIBUIDORA COSTA", "Detalle de la compra realizada",
+                                           "CAF-500 Cafe molido Costa 500 g 10 6000 60000", "Azucar 1 kg 20 1.050 21.000",
+                                           "Linea mala con total que no cuadra 5 100 999", "TOTAL 81000"]))
+        lineas = facturas.leer_pdf_texto(ruta)
+        self.assertEqual(lineas, [{"sku": "CAF-500", "nombre": "Cafe molido Costa 500 g", "cantidad": 10, "costo_unitario": 6000},
+                                  {"sku": "", "nombre": "Azucar 1 kg", "cantidad": 20, "costo_unitario": 1050}])
+        vacio = tempfile.mktemp(suffix=".pdf"); open(vacio, "wb").write(pdf_simple(["x"]))
+        with self.assertRaises(facturas.ErrorLectura):
+            facturas.leer_pdf_texto(vacio)
+
+    def test_subir_xml_y_flujo(self, _):
+        r = self.client.post(reverse("cargas"), {"tipo": "factura", "archivo": SimpleUploadedFile("f.xml", XML_FACTURA)}, follow=True)
+        self.assertContains(r, "del XML de la factura electrónica")
+        carga = CargaCatalogo.objects.get(); det = list(carga.detalles.order_by("fila_origen"))
+        self.assertEqual((len(det), det[0].accion, det[1].accion, det[0].cantidad), (2, "actualizar", "crear", 10))
+
+    def test_pdf_sin_texto_cae_a_ingreso_manual(self, _):
+        r = self.client.post(reverse("cargas"), {"tipo": "factura", "archivo": SimpleUploadedFile("f.pdf", pdf_simple(["x"]))}, follow=True)
+        self.assertContains(r, "no tiene texto"); self.assertContains(r, "ingresar los productos manualmente")
 
     def test_factura_flujo_completo(self, _):
         lineas = [{"sku": "CAF-500", "nombre": "Café molido Costa 500 g", "cantidad": 10, "costo_unitario": 6000},
                   {"sku": "", "nombre": "Azúcar 1 kg", "cantidad": 20, "costo_unitario": 1050}]
-        foto = SimpleUploadedFile("factura.jpg", b"\xff\xd8fake", content_type="image/jpeg")
-        with mock.patch("tienda.views.leer_factura", return_value=lineas):
+        foto = SimpleUploadedFile("factura.pdf", b"%PDF-fake", content_type="application/pdf")
+        with mock.patch("tienda.views.leer_factura_auto", return_value=(lineas, "pdf")):
             r = self.client.post(reverse("cargas"), {"tipo": "factura", "archivo": foto})
         carga = CargaCatalogo.objects.get()
         self.assertRedirects(r, reverse("carga_revision", args=[carga.id]))
@@ -130,14 +180,6 @@ class AppTests(TestCase):
         self.assertEqual((azucar.stock_actual, azucar.precio, azucar.costo, self.cafe.stock_actual, self.cafe.costo), (20, 1500, 1050, 18, 6000))
         carga.refresh_from_db(); self.assertEqual((carga.estado, carga.registros_importados), ("completada", 2))
 
-    def test_factura_sin_ia_permite_ingreso_manual(self, _):
-        foto = SimpleUploadedFile("f.png", b"x", content_type="image/png")
-        with mock.patch.dict("os.environ", {}, clear=False):
-            import os; os.environ.pop("ANTHROPIC_API_KEY", None)
-            r = self.client.post(reverse("cargas"), {"tipo": "factura", "archivo": foto}, follow=True)
-        self.assertContains(r, "ingresar los productos manualmente")
-        self.assertEqual(CargaCatalogo.objects.get().detalles.count(), 5)
-
     def test_importar_catalogo_csv(self, _):
         csv_bytes = "nombre;sku;precio;costo;stock;minimo\nPan de molde;PAN-1;2500;1500;30;10\n;SIN-NOMBRE;1;1;1;1\nCafé molido Costa 500 g;CAF-500;9500;6200;12;7\n".encode("utf-8")
         r = self.client.post(reverse("cargas"), {"tipo": "catalogo", "archivo": SimpleUploadedFile("c.csv", csv_bytes)}, follow=True)
@@ -147,6 +189,10 @@ class AppTests(TestCase):
         self.assertEqual(Producto.objects.get(sku="PAN-1").stock_actual, 30)
         r = self.client.post(reverse("cargas"), {"tipo": "catalogo", "archivo": SimpleUploadedFile("c.txt", b"x")}, follow=True)
         self.assertContains(r, "Formato no permitido")
+
+    def test_fotos_no_se_aceptan_como_factura(self, _):
+        r = self.client.post(reverse("cargas"), {"tipo": "factura", "archivo": SimpleUploadedFile("f.jpg", b"x", content_type="image/jpeg")}, follow=True)
+        self.assertContains(r, "Formato no permitido"); self.assertEqual(CargaCatalogo.objects.count(), 0)
 
     def test_importar_catalogo_xlsx(self, _):
         from openpyxl import Workbook

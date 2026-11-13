@@ -6,7 +6,7 @@
 
 {% if not hay_productos %}
 <div class="mensaje info"><b>Empieza aquí:</b> agrega tu primer producto o ahorra tiempo
-<a href="{% url 'cargas' %}">subiendo la foto de una factura o tu catálogo anterior</a>.</div>
+<a href="{% url 'cargas' %}">subiendo una factura (XML o PDF) o tu catálogo anterior</a>.</div>
 {% endif %}
 
 <div class="fila">
@@ -21,7 +21,7 @@
     <h2>Acciones rápidas</h2>
     <a class="btn acento" href="{% url 'venta_rapida' %}">＋ Registrar venta</a>
     <a class="btn" href="{% url 'producto_nuevo' %}">Agregar producto</a>
-    <a class="btn" href="{% url 'cargas' %}">📷 Cargar factura o boleta</a>
+    <a class="btn" href="{% url 'cargas' %}">Cargar factura (XML o PDF)</a>
     <a class="btn" href="{% url 'cargas' %}">Traer catálogo anterior (Excel/CSV)</a>
     {% if es_admin %}<a class="btn" href="{% url 'cierre_caja' %}">Hacer cierre de caja</a>{% endif %}
 </div>

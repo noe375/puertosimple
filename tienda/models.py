@@ -153,7 +153,7 @@ class SolicitudReposicion(models.Model):
 
 
 class CargaCatalogo(models.Model):
-    """Una subida de archivo: foto/PDF de factura o boleta, o catálogo en CSV/Excel."""
+    """Una subida de archivo: XML/PDF de factura, o catálogo en CSV/Excel."""
     ESTADOS = [("revision", "En revisión"), ("completada", "Completada"), ("cancelada", "Cancelada")]
     comercio = models.ForeignKey(Comercio, on_delete=models.CASCADE, related_name="cargas")
     usuario = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
