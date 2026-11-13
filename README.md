@@ -22,13 +22,15 @@ Abrir http://127.0.0.1:8000/ en el navegador.
 - Tienda pública de ejemplo: http://127.0.0.1:8000/tienda/puerto-simple/
 - Sin datos de ejemplo: crear cuenta en http://127.0.0.1:8000/registro/
 
-## 3. Lectura de facturas con IA (opcional)
-Para que la app lea las fotos/PDF de facturas automáticamente, definir la clave de la API de Anthropic antes de ejecutar:
-- Windows (PowerShell): `$env:ANTHROPIC_API_KEY="tu-clave"`
-- Mac/Linux: `export ANTHROPIC_API_KEY="tu-clave"`
+## 3. Carga de inventario desde facturas (gratis, sin IA)
+En **Cargar factura / catálogo** se puede subir:
+1. **XML de factura electrónica** (el .xml que llega al correo junto al PDF): lectura exacta.
+2. **PDF digital** (con texto): se leen las líneas de productos. Solo acepta una línea si cantidad × precio coincide con el total.
+3. **Catálogo en Excel o CSV**: se importa directo.
+4. Si un PDF no se puede leer (por ejemplo, un PDF escaneado), la pantalla de revisión permite **ingresar los productos a mano**.
 
-Sin la clave todo funciona igual: la pantalla de revisión permite ingresar los productos de la factura a mano,
-y el catálogo se puede importar desde Excel/CSV.
+En todos los casos de factura hay una pantalla para revisar y corregir, y para escribir el precio de venta de los productos nuevos.
+Para probar, en la carpeta `ejemplos/` hay una factura XML, una factura PDF y un catálogo CSV.
 
 ## Funcionalidades (según los entregables)
 | Funcionalidad | Dónde |
@@ -39,7 +41,7 @@ y el catálogo se puede importar desde Excel/CSV.
 | Venta rápida en una pantalla (buscador / lector de código) y comprobante | Venta rápida |
 | Panel de ventas en tiempo real y cierre de caja | Inicio, Cierre de caja |
 | Informe de ganancias y pérdidas diario, mensual y anual (+ CSV) | Ganancias y pérdidas |
-| Carga de inventario desde foto/PDF de factura o boleta | Cargar factura / catálogo |
+| Carga de inventario desde XML o PDF digital de factura (gratis) | Cargar factura / catálogo |
 | Importación de catálogo anterior (Excel/CSV) | Cargar factura / catálogo |
 | Datos del comercio (nombre, logo, contacto) y usuarios con roles | Configuración |
 | Página pública con productos y pedidos web | Ver mi tienda pública |
@@ -48,7 +50,7 @@ y el catálogo se puede importar desde Excel/CSV.
 ## Estructura
 - `tienda/models.py`: tablas (diagrama entidad-relación)
 - `tienda/servicios.py`: lógica del negocio (ventas, stock, alertas, informes)
-- `tienda/facturas.py`: lectura de facturas con IA e importación de catálogos
+- `tienda/facturas.py`: lectura de facturas (XML y PDF) e importación de catálogos
 - `tienda/views.py` y `tienda/urls.py`: páginas
 - `tienda/templates/`, `static/`: diseño
 - `tienda/tests.py`: pruebas automáticas → `python manage.py test`

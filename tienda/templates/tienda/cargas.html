@@ -2,16 +2,19 @@
 {% block titulo %}Cargar factura o catálogo{% endblock %}
 {% block contenido %}
 <h1>Cargar factura, boleta o catálogo</h1>
-<p class="sub">Sube la foto o el PDF de la factura de tu distribuidora: la app lee los productos y tú solo completas el precio de venta. Así no tienes que ingresar el inventario a mano.</p>
+<p class="sub">Sube el XML o el PDF de la factura de tu distribuidora: la app lee los productos y tú solo completas el precio de venta. Así no tienes que ingresar el inventario a mano.</p>
 <div class="col2">
 <div class="caja"><h2>Subir archivo</h2>
 <form method="post" enctype="multipart/form-data">{% csrf_token %}
 {% for campo in form %}<div class="campo"><label>{{ campo.label }}</label>{{ campo }}{{ campo.errors }}</div>{% endfor %}
 <button class="btn acento" type="submit">Subir y revisar</button></form></div>
 <div class="caja"><h2>Cómo funciona</h2>
-<ol><li><b>Factura o boleta (JPG, PNG o PDF):</b> la IA lee los productos, cantidades y costos. Verás una pantalla para <b>revisar y corregir</b> antes de guardar.</li>
+<ol><li><b>XML de factura electrónica (gratis y exacto):</b> el archivo .xml que llega al correo junto con el PDF.</li>
+<li><b>PDF digital (gratis):</b> si el PDF tiene texto, se leen las líneas de productos automáticamente.</li>
+<li>Los PDF escaneados o las fotos no se pueden leer: en ese caso puedes <b>ingresar los productos a mano</b> (se abre la pantalla de revisión con filas libres).</li>
+<li>En todos los casos verás una pantalla para <b>revisar y corregir</b> antes de guardar.</li>
 <li><b>Catálogo (Excel .xlsx o CSV):</b> columnas <code>nombre, sku, precio, costo, stock, minimo</code>. Se importa directo.</li>
-<li>Si la lectura automática no está disponible, igual puedes <b>ingresar los productos manualmente</b> en la pantalla de revisión.</li></ol></div>
+<li>Si nada se puede leer, igual puedes <b>ingresar los productos manualmente</b> en la pantalla de revisión.</li></ol></div>
 </div>
 <div class="caja"><h2>Cargas anteriores</h2><table><tr><th>Fecha</th><th>Archivo</th><th>Tipo</th><th>Estado</th><th class="der">Importados</th><th class="der">Con error</th></tr>
 {% for c in cargas %}<tr><td>{{ c.fecha_carga|date:"d/m/Y H:i" }}</td><td>{% if c.estado == 'revision' %}<a href="{% url 'carga_revision' c.id %}">{{ c.nombre_archivo }}</a>{% else %}{{ c.nombre_archivo }}{% endif %}</td><td>{{ c.formato }}</td>
