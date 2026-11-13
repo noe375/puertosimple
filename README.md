@@ -22,13 +22,20 @@ Abrir http://127.0.0.1:8000/ en el navegador.
 - Tienda pública de ejemplo: http://127.0.0.1:8000/tienda/puerto-simple/
 - Sin datos de ejemplo: crear cuenta en http://127.0.0.1:8000/registro/
 
-## 3. Lectura de facturas con IA (opcional)
-Para que la app lea las fotos/PDF de facturas automáticamente, definir la clave de la API de Anthropic antes de ejecutar:
+## 3. Carga de inventario desde facturas (gratis)
+En **Cargar factura / catálogo** se puede subir:
+1. **XML de factura electrónica** (el .xml que llega al correo junto al PDF): lectura exacta, sin IA ni internet.
+2. **PDF digital** (con texto): se leen las líneas de productos sin IA. Solo acepta una línea si cantidad × precio coincide con el total.
+3. **Foto o PDF escaneado**: se lee con IA, *opcional* (requiere clave de la API de Anthropic, ver abajo).
+4. Si nada se puede leer, la pantalla de revisión permite **ingresar los productos a mano**.
+
+En todos los casos hay una pantalla para revisar y corregir, y para escribir el precio de venta de los productos nuevos.
+Para probar, en la carpeta `ejemplos/` hay una factura XML, una factura PDF y un catálogo CSV.
+
+### Lectura de fotos con IA (opcional, de pago por uso)
+Definir la clave antes de ejecutar el servidor, en la misma terminal:
 - Windows (PowerShell): `$env:ANTHROPIC_API_KEY="tu-clave"`
 - Mac/Linux: `export ANTHROPIC_API_KEY="tu-clave"`
-
-Sin la clave todo funciona igual: la pantalla de revisión permite ingresar los productos de la factura a mano,
-y el catálogo se puede importar desde Excel/CSV.
 
 ## Funcionalidades (según los entregables)
 | Funcionalidad | Dónde |
@@ -39,7 +46,7 @@ y el catálogo se puede importar desde Excel/CSV.
 | Venta rápida en una pantalla (buscador / lector de código) y comprobante | Venta rápida |
 | Panel de ventas en tiempo real y cierre de caja | Inicio, Cierre de caja |
 | Informe de ganancias y pérdidas diario, mensual y anual (+ CSV) | Ganancias y pérdidas |
-| Carga de inventario desde foto/PDF de factura o boleta | Cargar factura / catálogo |
+| Carga de inventario desde XML, PDF o foto de factura o boleta (XML y PDF digital gratis; foto con IA opcional) | Cargar factura / catálogo |
 | Importación de catálogo anterior (Excel/CSV) | Cargar factura / catálogo |
 | Datos del comercio (nombre, logo, contacto) y usuarios con roles | Configuración |
 | Página pública con productos y pedidos web | Ver mi tienda pública |
