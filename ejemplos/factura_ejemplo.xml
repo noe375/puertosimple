@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<DTE xmlns="http://www.sii.cl/SiiDte" version="1.0"><Documento ID="F1"><Encabezado><IdDoc><TipoDTE>33</TipoDTE></IdDoc></Encabezado>
+<Detalle><NroLinDet>1</NroLinDet><CdgItem><TpoCodigo>INT1</TpoCodigo><VlrCodigo>CAF-500</VlrCodigo></CdgItem><NmbItem>Café molido Costa 500 g</NmbItem><QtyItem>10.000000</QtyItem><PrcItem>6000</PrcItem><MontoItem>60000</MontoItem></Detalle>
+<Detalle><NroLinDet>2</NroLinDet><NmbItem>Azúcar 1 kg</NmbItem><QtyItem>20</QtyItem><MontoItem>21000</MontoItem></Detalle>
+</Documento></DTE>
