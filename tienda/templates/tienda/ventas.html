@@ -1,0 +1,24 @@
+{% extends "tienda/base.html" %}{% load formatos %}
+{% block titulo %}Ventas{% endblock %}
+{% block contenido %}
+<h1>Ventas y pedidos</h1><p class="sub">Historial de transacciones de tu comercio.</p>
+{% if pendientes %}
+<div class="caja"><h2>Pedidos web pendientes ({{ pendientes|length }})</h2>
+<p class="nota">Al confirmar, se descuenta el stock y se cuenta como venta del día.</p>
+<table><tr><th>N°</th><th>Cliente</th><th>Contacto</th><th>Productos</th><th class="der">Total</th><th></th></tr>
+{% for v in pendientes %}<tr><td><a href="{% url 'venta_detalle' v.id %}">#{{ v.id }}</a></td><td>{{ v.cliente }}</td><td>{{ v.contacto }}</td>
+<td>{% for d in v.detalles.all %}{{ d.cantidad }} × {{ d.producto.nombre }}{% if not forloop.last %}, {% endif %}{% endfor %}</td><td class="der">{{ v.total|pesos }}</td>
+<td><form method="post" action="{% url 'venta_accion' v.id %}" style="display:flex;gap:6px">{% csrf_token %}<input type="hidden" name="volver" value="ventas">
+<select name="metodo_pago">{% for val, n in pagos %}<option value="{{ val }}">{{ n }}</option>{% endfor %}</select>
+<button class="btn chico primario" name="accion" value="confirmar">Confirmar</button><button class="btn chico peligro" name="accion" value="rechazar">Rechazar</button></form></td></tr>{% endfor %}</table></div>
+{% endif %}
+<div class="caja">
+<form method="get" class="filtros">
+    <select name="estado"><option value="">Todos los estados</option>{% for v, n in estados %}{% if v != 'pendiente' %}<option value="{{ v }}" {% if v == estado %}selected{% endif %}>{{ n }}</option>{% endif %}{% endfor %}</select>
+    <input type="date" name="fecha" value="{{ fecha }}"><button class="btn chico" type="submit">Filtrar</button>
+</form>
+<table><tr><th>N°</th><th>Fecha</th><th>Canal</th><th>Pago</th><th>Estado</th><th class="der">Total</th></tr>
+{% for v in ventas %}<tr><td><a href="{% url 'venta_detalle' v.id %}">#{{ v.id }}</a></td><td>{{ v.fecha_hora|date:"d/m/Y H:i" }}</td><td>{{ v.get_canal_display }}</td><td>{{ v.get_metodo_pago_display }}</td>
+<td><span class="etq {{ v.estado }}">{{ v.get_estado_display }}</span></td><td class="der">{{ v.total|pesos }}</td></tr>
+{% empty %}<tr><td colspan="6" class="nota">No hay ventas con esos filtros.</td></tr>{% endfor %}</table></div>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% load static formatos %}<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf" content="{{ csrf_token }}">
+    <title>{% block titulo %}Panel{% endblock %} · Puerto Simple</title>
+    <link rel="stylesheet" href="{% static 'css/estilo.css' %}">
+</head>
+<body>
+{% with u=request.resolver_match.url_name %}
+<div class="layout">
+    <nav class="lateral">
+        <div class="marca">
+            {% if comercio.logo %}<img src="{{ comercio.logo.url }}" alt="Logo">{% else %}<div class="logo-letra">🛍</div>{% endif %}
+            <div>{{ comercio.nombre }}<br><span class="nota" style="color:#8fb0a4">{{ comercio.region }}</span></div>
+        </div>
+        <a class="destacado" href="{% url 'venta_rapida' %}">＋ Venta rápida</a>
+        <a class="{% if u == 'inicio' %}activo{% endif %}" href="{% url 'inicio' %}">Inicio</a>
+        <a class="{% if u == 'ventas' or u == 'venta_detalle' %}activo{% endif %}" href="{% url 'ventas' %}">Ventas {% if n_pendientes %}<span class="insignia">{{ n_pendientes }}</span>{% endif %}</a>
+        <a class="{% if u == 'inventario' or u == 'producto_detalle' or u == 'producto_nuevo' or u == 'producto_editar' %}activo{% endif %}" href="{% url 'inventario' %}">Inventario</a>
+        <a class="{% if u == 'alertas' %}activo{% endif %}" href="{% url 'alertas' %}">Alertas de stock {% if n_alertas %}<span class="insignia">{{ n_alertas }}</span>{% endif %}</a>
+        <a class="{% if u == 'compras' %}activo{% endif %}" href="{% url 'compras' %}">Historial de compras</a>
+        <a class="{% if u == 'cargas' or u == 'carga_revision' %}activo{% endif %}" href="{% url 'cargas' %}">Cargar factura / catálogo</a>
+        {% if es_admin %}
+        <div class="etiqueta">Administración</div>
+        <a class="{% if u == 'cierre_caja' %}activo{% endif %}" href="{% url 'cierre_caja' %}">Cierre de caja</a>
+        <a class="{% if u == 'informes' %}activo{% endif %}" href="{% url 'informes' %}">Ganancias y pérdidas</a>
+        <a class="{% if u == 'configuracion' %}activo{% endif %}" href="{% url 'configuracion' %}">Configuración</a>
+        {% endif %}
+        <div class="etiqueta">Clientes</div>
+        <a href="{% url 'tienda_publica' comercio.slug %}" target="_blank">Ver mi tienda pública ↗</a>
+        <div class="pie">
+            {{ user.username }} · {% if es_admin %}Administrador{% else %}Vendedor{% endif %}
+            <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button type="submit">Cerrar sesión</button></form>
+        </div>
+    </nav>
+    <main class="contenido">
+        {% for m in messages %}<div class="mensaje {{ m.tags }}">{{ m }}</div>{% endfor %}
+        {% block contenido %}{% endblock %}
+    </main>
+</div>
+{% endwith %}
+<script src="{% static 'js/live.js' %}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

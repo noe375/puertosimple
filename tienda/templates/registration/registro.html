@@ -1,0 +1,13 @@
+{% load static %}<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crear comercio · Puerto Simple</title><link rel="stylesheet" href="{% static 'css/estilo.css' %}"></head>
+<body><div class="centrado">
+    <div class="caja">
+        <h1>Crea tu comercio</h1><p class="sub">Toma menos de un minuto.</p>
+        <form method="post">{% csrf_token %}
+            {% for campo in form %}<div class="campo"><label>{{ campo.label }}</label>{{ campo }}{{ campo.errors }}</div>{% endfor %}
+            <button class="btn primario" type="submit">Crear mi comercio</button>
+        </form>
+        <p class="nota">¿Ya tienes cuenta? <a href="{% url 'login' %}">Ingresar</a></p>
+    </div>
+</div></body></html>

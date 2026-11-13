@@ -1,0 +1,8 @@
+{% extends "tienda/base.html" %}
+{% block titulo %}{{ titulo }}{% endblock %}
+{% block contenido %}
+<h1>{{ titulo }}</h1><p class="sub">El margen de ganancia se calcula con el precio de venta menos el costo de compra.</p>
+<div class="caja" style="max-width:560px"><form method="post">{% csrf_token %}
+{% for campo in form %}<div class="campo"><label>{{ campo.label }}</label>{{ campo }}{% if campo.help_text %}<div class="ayuda">{{ campo.help_text }}</div>{% endif %}{{ campo.errors }}</div>{% endfor %}
+<button class="btn primario" type="submit">Guardar</button> <a class="btn" href="{% url 'inventario' %}">Cancelar</a></form></div>
+{% endblock %}

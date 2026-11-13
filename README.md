@@ -1,28 +1,54 @@
-# Puerto Simple - Entregable III (Equipo 8 "Los πr²")
+# Puerto Simple · Entrega final (Equipo 8 "Los πr²")
 
-## Requisitos
-- Python 3.10 o superior
-- Django 5.1.1  ->  pip install Django==5.1.1  
+Aplicación web SaaS en Django para PYMEs del comercio: inventario con alertas de stock mínimo, venta rápida,
+cierre de caja diario, informes de ganancias y pérdidas, carga de inventario desde facturas y tienda pública.
 
-## Cómo ejecutarlo (localhost)
-1. Abrir la terminal en la carpeta donde está manage.py
-2. python manage.py runserver
-3. Abrir http://127.0.0.1:8000/ en el navegador
+## 1. Instalar (una sola vez)
+```
+python -m pip install -r requirements.txt
+python manage.py migrate
+python manage.py cargar_demo
+```
+(`cargar_demo` crea un comercio de ejemplo con productos y 60 días de ventas. Es opcional.)
 
-## Datos para probar la funcionalidad corazón (precargados en tienda/views.py)
-| Producto | Precio | Stock | Mínimo |
-|---|---|---|---|
-| Café molido Costa 500 g | $8990 | 8 | 7 |
-| Taza cerámica Puerto | $6990 | 14 | 5 |
-| Filtro papel Nº4 | $3490 | 32 | 10 |
+## 2. Ejecutar
+```
+python manage.py runserver
+```
+Abrir http://127.0.0.1:8000/ en el navegador.
 
-## Casos de prueba (usar el botón "Reiniciar datos de demostración" antes de cada uno)
-- Caso 1: Café x2 + Taza x1 -> total $24970, café queda en 6 con alerta de stock bajo, taza en 13.
-- Caso 2: Café x10 -> venta rechazada por stock insuficiente, no se descuenta nada (café sigue en 8).
+- Administrador de demostración: usuario `demo` / contraseña `demo1234`
+- Vendedor de demostración: usuario `vendedor` / contraseña `demo1234`
+- Tienda pública de ejemplo: http://127.0.0.1:8000/tienda/puerto-simple/
+- Sin datos de ejemplo: crear cuenta en http://127.0.0.1:8000/registro/
 
-Los botones "Cargar Caso 1/2" solo llenan las cantidades; la venta se procesa al presionar "Confirmar venta".
+## 3. Lectura de facturas con IA (opcional)
+Para que la app lea las fotos/PDF de facturas automáticamente, definir la clave de la API de Anthropic antes de ejecutar:
+- Windows (PowerShell): `$env:ANTHROPIC_API_KEY="tu-clave"`
+- Mac/Linux: `export ANTHROPIC_API_KEY="tu-clave"`
 
-## Limitaciones actuales
-- Los datos viven en memoria (sin base de datos): al reiniciar el servidor vuelven a los valores iniciales.
-- Sin buscador de productos, sin login, sin carga de facturas (se desarrollarán para la versión final).
+Sin la clave todo funciona igual: la pantalla de revisión permite ingresar los productos de la factura a mano,
+y el catálogo se puede importar desde Excel/CSV.
 
+## Funcionalidades (según los entregables)
+| Funcionalidad | Dónde |
+|---|---|
+| Control de inventario con descuento automático y alertas de stock mínimo | Venta rápida, Inventario, Alertas de stock |
+| Reposición con solicitud a proveedor | Alertas de stock |
+| Historial de compras | Historial de compras |
+| Venta rápida en una pantalla (buscador / lector de código) y comprobante | Venta rápida |
+| Panel de ventas en tiempo real y cierre de caja | Inicio, Cierre de caja |
+| Informe de ganancias y pérdidas diario, mensual y anual (+ CSV) | Ganancias y pérdidas |
+| Carga de inventario desde foto/PDF de factura o boleta | Cargar factura / catálogo |
+| Importación de catálogo anterior (Excel/CSV) | Cargar factura / catálogo |
+| Datos del comercio (nombre, logo, contacto) y usuarios con roles | Configuración |
+| Página pública con productos y pedidos web | Ver mi tienda pública |
+| Indicadores en moneda local (dólar y UF) desde API pública mindicador.cl | Inicio |
+
+## Estructura
+- `tienda/models.py`: tablas (diagrama entidad-relación)
+- `tienda/servicios.py`: lógica del negocio (ventas, stock, alertas, informes)
+- `tienda/facturas.py`: lectura de facturas con IA e importación de catálogos
+- `tienda/views.py` y `tienda/urls.py`: páginas
+- `tienda/templates/`, `static/`: diseño
+- `tienda/tests.py`: pruebas automáticas → `python manage.py test`

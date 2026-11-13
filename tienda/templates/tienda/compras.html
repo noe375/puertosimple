@@ -1,0 +1,8 @@
+{% extends "tienda/base.html" %}{% load formatos %}
+{% block titulo %}Historial de compras{% endblock %}
+{% block contenido %}
+<h1>Historial de compras</h1><p class="sub">Todo lo que ha entrado al inventario: facturas cargadas y reposiciones recibidas.</p>
+<div class="caja"><table><tr><th>Fecha</th><th>Producto</th><th class="der">Cantidad</th><th class="der">Costo unitario</th><th class="der">Total</th><th>Origen</th></tr>
+{% for m in movimientos %}<tr><td>{{ m.fecha_hora|date:"d/m/Y H:i" }}</td><td>{{ m.producto.nombre }}</td><td class="der">{{ m.cantidad }}</td><td class="der">{{ m.costo_unitario|pesos }}</td><td class="der">{% widthratio m.cantidad 1 m.costo_unitario as t %}{{ t|pesos }}</td><td class="nota">{{ m.nota }}</td></tr>
+{% empty %}<tr><td colspan="6" class="nota">Aún no hay compras registradas.</td></tr>{% endfor %}</table></div>
+{% endblock %}

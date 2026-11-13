@@ -1,0 +1,28 @@
+{% extends "tienda/base.html" %}{% load formatos %}
+{% block titulo %}Ganancias y pérdidas{% endblock %}
+{% block contenido %}
+<h1>Ganancias y pérdidas</h1><p class="sub">Informe diario, mensual o anual de lo que realmente ganaste.</p>
+<form method="get" class="filtros caja">
+    <select name="periodo"><option value="dia" {% if periodo == 'dia' %}selected{% endif %}>Diario</option><option value="mes" {% if periodo == 'mes' %}selected{% endif %}>Mensual</option><option value="anio" {% if periodo == 'anio' %}selected{% endif %}>Anual</option></select>
+    <input type="date" name="fecha" value="{{ fecha|date:'Y-m-d' }}"><button class="btn primario" type="submit">Ver informe</button>
+    <a class="btn" href="?periodo={{ periodo }}&fecha={{ fecha|date:'Y-m-d' }}&formato=csv">Descargar CSV (Excel)</a>
+</form>
+<h2>Período: {{ etiqueta }}</h2>
+<div class="fila">
+    <div class="tarjeta"><div class="nota">Ingresos por ventas</div><div class="num">{{ r.ingresos|pesos }}</div><div class="nota">{{ r.n_ventas }} ventas · ticket {{ r.ticket|pesos }}</div></div>
+    <div class="tarjeta"><div class="nota">Costo de lo vendido</div><div class="num">{{ r.costo|pesos }}</div></div>
+    <div class="tarjeta"><div class="nota">Ganancia bruta</div><div class="num positivo">{{ r.ganancia_bruta|pesos }}</div></div>
+    <div class="tarjeta"><div class="nota">Pérdidas por mermas</div><div class="num {% if r.mermas %}negativo{% endif %}">{{ r.mermas|pesos }}</div></div>
+    <div class="tarjeta"><div class="nota">Resultado final</div><div class="num {% if r.resultado < 0 %}negativo{% else %}positivo{% endif %}">{{ r.resultado|pesos }}</div><div class="nota">{% if r.resultado < 0 %}Pérdida{% else %}Ganancia{% endif %} del período</div></div>
+</div>
+<div class="caja"><h2>Ingresos {% if periodo == 'dia' %}por hora{% elif periodo == 'mes' %}por día{% else %}por mes{% endif %}</h2>
+<div class="barras">{% for s in serie %}<div class="barra" style="height:{{ s.alto }}%" title="{{ s.etiqueta }}: {{ s.ingresos|pesos }} (ganancia {{ s.ganancia|pesos }})"></div>{% endfor %}</div>
+<div class="etiquetas">{% for s in serie %}<span>{{ s.etiqueta }}</span>{% endfor %}</div></div>
+<div class="col2">
+<div class="caja"><h2>Más vendidos</h2><table>{% for t in r.top %}<tr><td>{{ t.producto__nombre }}</td><td class="der">{{ t.u }} un.</td><td class="der">{{ t.t|pesos }}</td></tr>{% empty %}<tr><td class="nota">Sin ventas en el período.</td></tr>{% endfor %}</table></div>
+<div class="caja"><h2>Detalle</h2><table>
+<tr><td>Ventas presenciales</td><td class="der">{{ r.presencial|pesos }}</td></tr><tr><td>Ventas web</td><td class="der">{{ r.web|pesos }}</td></tr>
+{% for k, v in r.por_pago.items %}<tr><td class="nota">Pagado con {{ k }}</td><td class="der nota">{{ v|pesos }}</td></tr>{% endfor %}
+<tr><td>Compras de mercadería (inversión)</td><td class="der">{{ r.compras|pesos }}</td></tr></table></div>
+</div>
+{% endblock %}

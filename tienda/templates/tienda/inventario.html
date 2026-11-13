@@ -1,0 +1,25 @@
+{% extends "tienda/base.html" %}{% load formatos %}
+{% block titulo %}Inventario{% endblock %}
+{% block contenido %}
+<h1>Inventario</h1><p class="sub">Tus productos, con stock en tiempo real y margen de ganancia.</p>
+<div class="filtros">
+    <form method="get" class="filtros" style="margin:0">
+        <input type="text" name="q" value="{{ q }}" placeholder="Buscar por nombre o código">
+        <select name="filtro"><option value="">Todos</option><option value="bajo" {% if filtro == 'bajo' %}selected{% endif %}>Solo stock bajo</option></select>
+        <label class="nota"><input type="checkbox" name="inactivos" value="1" {% if inactivos %}checked{% endif %}> Mostrar inactivos</label>
+        <button class="btn chico" type="submit">Filtrar</button>
+    </form>
+    <a class="btn primario" href="{% url 'producto_nuevo' %}">＋ Agregar producto</a>
+    <a class="btn" href="{% url 'cargas' %}">📷 Cargar factura / catálogo</a>
+</div>
+<div class="caja"><table>
+<tr><th>Código</th><th>Producto</th><th class="der">Precio</th><th class="der">Costo</th><th class="der">Margen</th><th class="der">Stock</th><th>Estado</th><th></th></tr>
+{% for p in productos %}<tr>
+<td>{{ p.sku }}</td><td><a href="{% url 'producto_detalle' p.id %}">{{ p.nombre }}</a></td><td class="der">{{ p.precio|pesos }}</td><td class="der">{{ p.costo|pesos }}</td>
+<td class="der {% if p.margen < 0 %}negativo{% else %}positivo{% endif %}">{{ p.margen|pesos }}</td>
+<td class="der">{{ p.stock_actual }} <span class="nota">/ mín. {{ p.stock_minimo }}</span></td>
+<td>{% if not p.activo %}<span class="etq">Inactivo</span>{% elif p.bajo_minimo %}<span class="etq bajo">Stock bajo</span>{% else %}<span class="etq ok">Disponible</span>{% endif %}</td>
+<td><a class="btn chico" href="{% url 'producto_editar' p.id %}">Editar</a></td></tr>
+{% empty %}<tr><td colspan="8" class="nota">No hay productos. Agrega uno o <a href="{% url 'cargas' %}">sube una factura</a>.</td></tr>{% endfor %}
+</table></div>
+{% endblock %}

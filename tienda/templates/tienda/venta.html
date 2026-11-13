@@ -1,0 +1,26 @@
+{% extends "tienda/base.html" %}{% load formatos %}
+{% block titulo %}Venta rápida{% endblock %}
+{% block contenido %}
+<h1>Venta rápida</h1>
+<p class="sub">Escribe o escanea el código y presiona Enter. Al cobrar, el stock se descuenta solo.</p>
+<div id="error" class="mensaje error" style="display:none"></div>
+<div id="resultado"></div>
+<div class="venta">
+    <div class="caja">
+        <input id="buscar" class="buscador" type="text" placeholder="🔍 Buscar por nombre o escanear código…" autocomplete="off">
+        <div id="lista" class="lista-prod"></div>
+    </div>
+    <div class="caja">
+        <h2>Venta actual</h2>
+        <div id="carrito"></div>
+        <p style="margin:14px 0 4px" class="nota">Total a cobrar</p>
+        <div class="total-grande" id="total">$0</div>
+        <div class="campo" style="margin-top:12px"><label>Método de pago</label>
+            <select id="pago">{% for v, n in pagos %}<option value="{{ v }}">{{ n }}</option>{% endfor %}</select></div>
+        <div class="campo"><label>Cliente (opcional)</label><input type="text" id="cliente" maxlength="100"></div>
+        <button id="cobrar" class="btn acento" disabled style="width:100%;font-size:17px;padding:13px">Cobrar y descontar stock</button>
+    </div>
+</div>
+{{ productos|json_script:"datos-productos" }}
+{% endblock %}
+{% block scripts %}{% load static %}<script src="{% static 'js/venta.js' %}"></script>{% endblock %}

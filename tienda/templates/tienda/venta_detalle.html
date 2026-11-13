@@ -1,0 +1,22 @@
+{% extends "tienda/base.html" %}{% load formatos %}
+{% block titulo %}Venta #{{ venta.id }}{% endblock %}
+{% block contenido %}
+<h1>Venta #{{ venta.id }} <span class="etq {{ venta.estado }}">{{ venta.get_estado_display }}</span></h1>
+<p class="sub">{{ venta.fecha_hora|date:"d/m/Y H:i" }} · {{ venta.get_canal_display }} · {{ venta.get_metodo_pago_display }}{% if venta.cliente %} · Cliente: {{ venta.cliente }} {{ venta.contacto }}{% endif %}</p>
+<div class="caja">
+<table><tr><th>Producto</th><th>Cant.</th><th class="der">Precio</th><th class="der">Subtotal</th></tr>
+{% for d in venta.detalles.all %}<tr><td>{{ d.producto.nombre }}</td><td>{{ d.cantidad }}</td><td class="der">{{ d.precio_unitario|pesos }}</td><td class="der">{{ d.subtotal|pesos }}</td></tr>{% endfor %}
+<tr><td colspan="3" class="der"><b>Total</b></td><td class="der"><b>{{ venta.total|pesos }}</b></td></tr>
+{% if es_admin and venta.estado == 'completada' %}<tr><td colspan="3" class="der">Ganancia de esta venta</td><td class="der positivo">{{ venta.ganancia|pesos }}</td></tr>{% endif %}</table>
+</div>
+<a class="btn" href="{% url 'comprobante' venta.id %}" target="_blank">Descargar / imprimir comprobante</a>
+<a class="btn" href="{% url 'ventas' %}">Volver</a>
+{% if venta.estado == 'completada' %}
+<form method="post" action="{% url 'venta_accion' venta.id %}" style="display:inline" onsubmit="return confirm('¿Anular esta venta? El stock volverá al inventario.')">
+{% csrf_token %}<input type="hidden" name="volver" value="ventas"><button class="btn peligro" name="accion" value="anular">Anular venta</button></form>
+{% elif venta.estado == 'pendiente' %}
+<form method="post" action="{% url 'venta_accion' venta.id %}" style="display:inline-flex;gap:6px">{% csrf_token %}<input type="hidden" name="volver" value="ventas">
+<select name="metodo_pago">{% for val, n in pagos %}<option value="{{ val }}">{{ n }}</option>{% endfor %}</select>
+<button class="btn primario" name="accion" value="confirmar">Confirmar pedido</button><button class="btn peligro" name="accion" value="rechazar">Rechazar</button></form>
+{% endif %}
+{% endblock %}
