@@ -1,0 +1,25 @@
+{% extends "tienda/base.html" %}{% load formatos %}
+{% block titulo %}{{ p.nombre }}{% endblock %}
+{% block contenido %}
+<h1>{{ p.nombre }} {% if not p.activo %}<span class="etq">Inactivo</span>{% elif p.bajo_minimo %}<span class="etq bajo">Stock bajo</span>{% endif %}</h1>
+<p class="sub">Código {{ p.sku }} · {{ p.descripcion }}</p>
+<div class="fila">
+    <div class="tarjeta"><div class="nota">Stock actual</div><div class="num">{{ p.stock_actual }}</div><div class="nota">Mínimo {{ p.stock_minimo }} · Objetivo {{ p.objetivo }}</div></div>
+    <div class="tarjeta"><div class="nota">Precio de venta</div><div class="num">{{ p.precio|pesos }}</div><div class="nota">Costo {{ p.costo|pesos }}</div></div>
+    <div class="tarjeta"><div class="nota">Margen por unidad</div><div class="num {% if p.margen < 0 %}negativo{% else %}positivo{% endif %}">{{ p.margen|pesos }}</div>{% if p.margen < 0 %}<div class="nota negativo">Estás vendiendo con pérdida</div>{% endif %}</div>
+</div>
+<p><a class="btn" href="{% url 'producto_editar' p.id %}">Editar</a>
+{% if p.activo %}<a class="btn peligro" href="{% url 'producto_desactivar' p.id %}">Eliminar (marcar inactivo)</a>{% endif %}
+<a class="btn" href="{% url 'inventario' %}">Volver</a></p>
+<div class="col2">
+<div class="caja"><h2>Registrar merma o ajuste</h2>
+<form method="post" action="{% url 'producto_ajuste' p.id %}">{% csrf_token %}
+{% for campo in form %}<div class="campo"><label>{{ campo.label }}</label>{{ campo }}</div>{% endfor %}
+<p class="ayuda">Merma: se restan las unidades perdidas y cuenta como pérdida en tus informes. Ajuste: escribe el stock que contaste.</p>
+<button class="btn primario" type="submit">Guardar</button></form></div>
+<div class="caja"><h2>Últimos movimientos</h2><table><tr><th>Fecha</th><th>Tipo</th><th class="der">Cant.</th><th class="der">Stock</th></tr>
+{% for m in movimientos %}<tr><td>{{ m.fecha_hora|date:"d/m H:i" }}</td><td>{{ m.get_tipo_display }}<br><span class="nota">{{ m.nota }}</span></td>
+<td class="der {% if m.cantidad < 0 %}negativo{% else %}positivo{% endif %}">{{ m.cantidad }}</td><td class="der">{{ m.stock_resultante }}</td></tr>
+{% empty %}<tr><td class="nota">Sin movimientos.</td></tr>{% endfor %}</table></div>
+</div>
+{% endblock %}

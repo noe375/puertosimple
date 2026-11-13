@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -20,7 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-84ucd_#ww)@yl5!ibz$d7&qa$3igmrrw&r(b9-dov0nwspeto)'
+SECRET_KEY = 'django-insecure-%h#fnufzp_zx2i&(_!%00)py2y=13a!1s&sxp)(a&(h6bc(qz0'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -63,6 +64,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'tienda.contexto.datos_globales',
             ],
         },
     },
@@ -123,5 +125,12 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Página de error de seguridad en español
-CSRF_FAILURE_VIEW = 'tienda.views.error_csrf'
+# ---- Configuración propia del proyecto ----
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')      # aquí se guardan logos y facturas subidas
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'inicio'
+LOGOUT_REDIRECT_URL = 'login'
+CSRF_FAILURE_VIEW = 'tienda.views.error_csrf'      # mensaje de error de seguridad en español
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024

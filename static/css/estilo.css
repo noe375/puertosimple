@@ -1,0 +1,61 @@
+:root { --verde:#1f3a33; --verde2:#2c5247; --acento:#e8643c; --fondo:#f6f3ee; --borde:#e2ddd3; --texto:#222; --gris:#6f6f6f; }
+* { box-sizing: border-box; }
+body { margin:0; font-family: "Segoe UI", Arial, sans-serif; background:var(--fondo); color:var(--texto); font-size:15px; }
+a { color: var(--verde2); }
+.layout { display:flex; min-height:100vh; }
+.lateral { width:230px; background:var(--verde); color:#fff; padding:18px 12px; display:flex; flex-direction:column; position:sticky; top:0; height:100vh; }
+.lateral .marca { display:flex; align-items:center; gap:10px; margin-bottom:22px; font-weight:bold; font-size:17px; }
+.lateral .marca img { width:38px; height:38px; border-radius:8px; object-fit:cover; background:#fff; }
+.lateral .logo-letra { width:38px; height:38px; border-radius:8px; background:var(--acento); display:flex; align-items:center; justify-content:center; font-size:20px; }
+.lateral a { display:flex; justify-content:space-between; align-items:center; color:#d6e3de; text-decoration:none; padding:9px 12px; border-radius:8px; margin-bottom:3px; }
+.lateral a:hover { background:var(--verde2); }
+.lateral a.activo { background:var(--verde2); color:#fff; font-weight:bold; }
+.lateral a.destacado { background:var(--acento); color:#fff; font-weight:bold; margin-bottom:10px; }
+.lateral .etiqueta { font-size:11px; text-transform:uppercase; color:#8fb0a4; margin:14px 12px 4px; }
+.insignia { background:var(--acento); color:#fff; border-radius:10px; padding:1px 8px; font-size:12px; }
+.lateral .pie { margin-top:auto; font-size:13px; color:#b9cec7; }
+.lateral .pie button { background:none; border:1px solid #5d7f74; color:#fff; border-radius:6px; padding:5px 10px; cursor:pointer; margin-top:6px; }
+.contenido { flex:1; padding:24px 30px; max-width:1250px; }
+h1 { margin:0 0 4px; font-size:26px; } h2 { font-size:18px; margin:0 0 12px; }
+.sub { color:var(--gris); margin-bottom:18px; }
+.fila { display:flex; gap:16px; flex-wrap:wrap; margin-bottom:18px; }
+.tarjeta { background:#fff; border:1px solid var(--borde); border-radius:12px; padding:18px; flex:1; min-width:200px; margin-bottom:0; }
+.caja { background:#fff; border:1px solid var(--borde); border-radius:12px; padding:18px; margin-bottom:18px; }
+.num { font-size:28px; font-weight:bold; } .nota { color:var(--gris); font-size:13px; }
+.col2 { display:grid; grid-template-columns: 1fr 1fr; gap:18px; } @media (max-width:900px){ .col2{grid-template-columns:1fr;} .lateral{display:none;} }
+table { width:100%; border-collapse:collapse; font-size:14px; }
+th { text-align:left; font-size:12px; text-transform:uppercase; color:var(--gris); padding:8px; border-bottom:2px solid var(--borde); }
+td { padding:8px; border-bottom:1px solid #eee; vertical-align:middle; }
+.der { text-align:right; }
+input, select, textarea { padding:8px; border:1px solid #c9c3b8; border-radius:7px; font-size:14px; font-family:inherit; max-width:100%; }
+input[type=number] { width:90px; }
+.campo { margin-bottom:12px; } .campo label { display:block; font-weight:600; margin-bottom:4px; font-size:14px; }
+.campo input[type=text], .campo input[type=email], .campo input[type=password], .campo input[type=number], .campo select { width:100%; max-width:420px; }
+.errorlist { color:#b00020; list-style:none; padding:0; margin:3px 0; font-size:13px; } .ayuda { color:var(--gris); font-size:12px; }
+.btn { display:inline-block; background:#fff; border:1px solid var(--verde); color:var(--verde); padding:9px 16px; border-radius:8px; cursor:pointer; font-size:14px; text-decoration:none; }
+.btn.primario { background:var(--verde); color:#fff; } .btn.acento { background:var(--acento); border-color:var(--acento); color:#fff; font-weight:bold; }
+.btn.peligro { border-color:#b00020; color:#b00020; } .btn.chico { padding:4px 10px; font-size:13px; }
+.btn:disabled { opacity:.45; cursor:not-allowed; }
+.mensaje { padding:12px 16px; border-radius:8px; margin-bottom:12px; border:1px solid; }
+.mensaje.success { background:#e3f6e3; border-color:#9c9; } .mensaje.error { background:#fde2e2; border-color:#e99; }
+.mensaje.warning { background:#fff4d6; border-color:#e0c060; } .mensaje.info { background:#e6f0fa; border-color:#9bc; }
+.etq { padding:2px 9px; border-radius:10px; font-size:12px; font-weight:bold; background:#e8e8e8; }
+.etq.bajo, .etq.anulada, .etq.rechazada { background:#fde2e2; color:#b00020; } .etq.ok, .etq.completada, .etq.recibida { background:#e3f6e3; color:#256b25; }
+.etq.pendiente { background:#fff4d6; color:#8a6500; }
+.positivo { color:#256b25; } .negativo { color:#b00020; font-weight:bold; }
+.barras { display:flex; align-items:flex-end; gap:3px; height:170px; border-bottom:2px solid var(--borde); padding-top:10px; }
+.barra { flex:1; background:var(--acento); border-radius:4px 4px 0 0; min-height:2px; position:relative; }
+.etiquetas { display:flex; gap:3px; font-size:10px; color:var(--gris); } .etiquetas span { flex:1; text-align:center; overflow:hidden; }
+.filtros { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:14px; }
+.centrado { max-width:460px; margin:50px auto; } .publica { max-width:900px; margin:0 auto; padding:20px; }
+/* venta rápida */
+.venta { display:grid; grid-template-columns: 1.4fr 1fr; gap:18px; align-items:start; } @media (max-width:900px){ .venta{grid-template-columns:1fr;} }
+.lista-prod { max-height:62vh; overflow:auto; }
+.prod { display:flex; justify-content:space-between; align-items:center; padding:9px 6px; border-bottom:1px solid #eee; }
+.prod.agotado { opacity:.5; }
+.buscador { width:100%; font-size:17px; padding:12px; margin-bottom:10px; }
+.carrito-linea { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #eee; gap:8px; }
+.cant { display:flex; align-items:center; gap:6px; } .cant button { width:28px; height:28px; border-radius:50%; border:1px solid #bbb; background:#fff; cursor:pointer; }
+.total-grande { font-size:30px; font-weight:bold; }
+.aviso-alerta { background:#fff4d6; border:2px solid #e0a800; padding:10px; border-radius:8px; margin-top:8px; }
+@media print { .lateral, .no-imprimir { display:none !important; } }

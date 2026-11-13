@@ -1,0 +1,15 @@
+{% load static %}<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ingresar · Puerto Simple</title><link rel="stylesheet" href="{% static 'css/estilo.css' %}"></head>
+<body><div class="centrado">
+    <div class="caja">
+        <h1>Puerto Simple</h1><p class="sub">Inventario, ventas y ganancias para tu PYME.</p>
+        {% if form.errors %}<div class="mensaje error">Usuario o contraseña incorrectos. Inténtalo de nuevo.</div>{% endif %}
+        <form method="post">{% csrf_token %}
+            <div class="campo"><label>Usuario</label><input type="text" name="username" autofocus required></div>
+            <div class="campo"><label>Contraseña</label><input type="password" name="password" required></div>
+            <button class="btn primario" type="submit">Ingresar</button>
+        </form>
+        <p class="nota">¿Aún no tienes cuenta? <a href="{% url 'registro' %}">Crea tu comercio</a></p>
+    </div>
+</div></body></html>

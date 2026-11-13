@@ -1,0 +1,22 @@
+{% extends "tienda/base.html" %}{% load formatos %}
+{% block titulo %}Cierre de caja{% endblock %}
+{% block contenido %}
+<h1>Cierre de caja · {{ hoy|date:"d/m/Y" }}</h1><p class="sub">Todas las ventas del día en una sola pantalla, sumadas automáticamente. Nada de sumar a mano.</p>
+<div class="fila">
+    <div class="tarjeta"><div class="nota">Total del día</div><div class="num" data-live="ventas_hoy" data-fmt="pesos">{{ r.ingresos|pesos }}</div><div class="nota"><span data-live="n_ventas">{{ r.n_ventas }}</span> ventas</div></div>
+    <div class="tarjeta"><div class="nota">Ganancia del día</div><div class="num positivo" data-live="ganancia" data-fmt="pesos">{{ r.ganancia_bruta|pesos }}</div></div>
+    <div class="tarjeta"><div class="nota">Presencial / Web</div><div class="num" style="font-size:20px">{{ r.presencial|pesos }} / {{ r.web|pesos }}</div></div>
+</div>
+<div class="col2">
+<div class="caja"><h2>Por método de pago</h2><table>
+{% for v, n in r.por_pago.items %}<tr><td>{{ v|capfirst }}</td><td class="der">{{ n|pesos }}</td></tr>{% empty %}<tr><td class="nota">Sin ventas hoy.</td></tr>{% endfor %}</table>
+<h2 style="margin-top:20px">Cerrar la caja</h2>
+<p>Efectivo que debería haber: <b>{{ efectivo|pesos }}</b></p>
+<form method="post">{% csrf_token %}<div class="campo"><label>Efectivo contado ($)</label><input type="number" name="efectivo_contado" min="0" value="{{ cierre_hoy.efectivo_contado|default:efectivo }}" required></div>
+<button class="btn acento" type="submit">Guardar cierre de caja</button></form>
+{% if cierre_hoy %}<p class="mensaje {% if cierre_hoy.diferencia == 0 %}success{% else %}warning{% endif %}" style="margin-top:12px">Cierre guardado: diferencia de <b>{{ cierre_hoy.diferencia|pesos }}</b> {% if cierre_hoy.diferencia == 0 %}(la caja cuadra ✔){% elif cierre_hoy.diferencia < 0 %}(falta dinero){% else %}(sobra dinero){% endif %}.</p>{% endif %}</div>
+<div class="caja"><h2>Ventas del día</h2><table>{% for v in ventas %}<tr><td><a href="{% url 'venta_detalle' v.id %}">#{{ v.id }}</a></td><td>{{ v.fecha_hora|date:"H:i" }}</td><td>{{ v.get_metodo_pago_display }}</td><td class="der">{{ v.total|pesos }}</td></tr>
+{% empty %}<tr><td class="nota">Aún no hay ventas hoy.</td></tr>{% endfor %}</table>
+{% if anteriores %}<h2 style="margin-top:20px">Cierres anteriores</h2><table>{% for c in anteriores %}<tr><td>{{ c.fecha|date:"d/m/Y" }}</td><td>{{ c.total_ventas|pesos }}</td><td class="der {% if c.diferencia != 0 %}negativo{% endif %}">dif. {{ c.diferencia|pesos }}</td></tr>{% endfor %}</table>{% endif %}</div>
+</div>
+{% endblock %}

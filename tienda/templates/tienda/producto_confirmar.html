@@ -1,0 +1,8 @@
+{% extends "tienda/base.html" %}
+{% block titulo %}Eliminar producto{% endblock %}
+{% block contenido %}
+<h1>¿Eliminar «{{ p.nombre }}»?</h1>
+<div class="caja" style="max-width:520px"><p>El producto se marcará como <b>inactivo</b>: dejará de aparecer en la lista activa y en la venta rápida,
+pero su historial de ventas y movimientos se conserva.</p>
+<form method="post">{% csrf_token %}<button class="btn peligro" type="submit">Sí, eliminar</button> <a class="btn" href="{% url 'producto_detalle' p.id %}">No, volver</a></form></div>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "tienda/base.html" %}
+{% block titulo %}Configuración{% endblock %}
+{% block contenido %}
+<h1>Configuración</h1><p class="sub">Datos de tu comercio: aparecen en tu tienda pública y en los comprobantes.</p>
+<div class="col2">
+<div class="caja"><h2>Datos del comercio</h2><form method="post" enctype="multipart/form-data">{% csrf_token %}
+{% for campo in form %}<div class="campo"><label>{{ campo.label }}</label>{{ campo }}{{ campo.errors }}</div>{% endfor %}
+<button class="btn primario" type="submit">Guardar</button></form>
+<p class="nota">Tu tienda pública: <a href="{% url 'tienda_publica' comercio.slug %}" target="_blank">/tienda/{{ comercio.slug }}/</a></p></div>
+<div class="caja"><h2>Usuarios</h2><table>{% for p in usuarios %}<tr><td>{{ p.user.username }}</td><td>{{ p.get_rol_display }}</td></tr>{% endfor %}</table>
+<h2 style="margin-top:20px">Agregar vendedor</h2><p class="nota">Puede registrar ventas y ver inventario, pero no ve ganancias ni la configuración.</p>
+<form method="post" action="{% url 'vendedor_nuevo' %}">{% csrf_token %}
+{% for campo in form_vendedor %}<div class="campo"><label>{{ campo.label }}</label>{{ campo }}</div>{% endfor %}
+<button class="btn" type="submit">Crear vendedor</button></form></div>
+</div>
+{% endblock %}

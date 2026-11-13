@@ -1,0 +1,56 @@
+{% extends "tienda/base.html" %}{% load formatos %}
+{% block titulo %}Inicio{% endblock %}
+{% block contenido %}
+<h1>Buenos días, {{ user.username }}</h1>
+<p class="sub">{% now "l j \d\e F" %} · Tu negocio está al día. Los totales se actualizan solos.</p>
+
+{% if not hay_productos %}
+<div class="mensaje info"><b>Empieza aquí:</b> agrega tu primer producto o ahorra tiempo
+<a href="{% url 'cargas' %}">subiendo la foto de una factura o tu catálogo anterior</a>.</div>
+{% endif %}
+
+<div class="fila">
+    <div class="tarjeta"><div class="nota">Ventas de hoy</div><div class="num" data-live="ventas_hoy" data-fmt="pesos">{{ hoy.ingresos|pesos }}</div>
+        <div class="nota"><span data-live="n_ventas">{{ hoy.n_ventas }}</span> ventas · ticket promedio <span data-live="ticket" data-fmt="pesos">{{ hoy.ticket|pesos }}</span></div></div>
+    {% if es_admin %}<div class="tarjeta"><div class="nota">Ganancia de hoy</div><div class="num positivo" data-live="ganancia" data-fmt="pesos">{{ hoy.ganancia_bruta|pesos }}</div><div class="nota">Ventas menos costo de los productos</div></div>{% endif %}
+    <div class="tarjeta"><div class="nota">Pedidos web pendientes</div><div class="num" data-live="pendientes">{{ hoy.pendientes }}</div><div class="nota"><a href="{% url 'ventas' %}">Revisar pedidos</a></div></div>
+    <div class="tarjeta"><div class="nota">Alertas de stock</div><div class="num {% if hoy.alertas %}negativo{% endif %}" data-live="alertas">{{ hoy.alertas }}</div><div class="nota"><a href="{% url 'alertas' %}">Ver y reponer</a></div></div>
+</div>
+
+<div class="caja">
+    <h2>Acciones rápidas</h2>
+    <a class="btn acento" href="{% url 'venta_rapida' %}">＋ Registrar venta</a>
+    <a class="btn" href="{% url 'producto_nuevo' %}">Agregar producto</a>
+    <a class="btn" href="{% url 'cargas' %}">📷 Cargar factura o boleta</a>
+    <a class="btn" href="{% url 'cargas' %}">Traer catálogo anterior (Excel/CSV)</a>
+    {% if es_admin %}<a class="btn" href="{% url 'cierre_caja' %}">Hacer cierre de caja</a>{% endif %}
+</div>
+
+<div class="col2">
+    <div class="caja">
+        <h2>Stock bajo</h2>
+        {% for p in bajos %}<div class="prod"><span>{{ p.nombre }}<br><span class="nota">{{ p.sku }}</span></span><span class="negativo">{{ p.stock_actual }} un. <span class="nota">(mín. {{ p.stock_minimo }})</span></span></div>
+        {% empty %}<p class="nota">Todo el inventario está sobre el mínimo. ✔</p>{% endfor %}
+        {% if bajos %}<p><a href="{% url 'alertas' %}">Reponer a tiempo para no perder ventas →</a></p>{% endif %}
+    </div>
+    <div class="caja">
+        <h2>Últimas ventas</h2>
+        <table>{% for v in ultimas %}<tr><td><a href="{% url 'venta_detalle' v.id %}">#{{ v.id }}</a></td><td>{{ v.fecha_hora|date:"d/m H:i" }}</td><td>{{ v.get_canal_display }}</td><td class="der">{{ v.total|pesos }}</td></tr>
+        {% empty %}<tr><td class="nota">Todavía no hay ventas.</td></tr>{% endfor %}</table>
+    </div>
+</div>
+
+{% if pendientes %}
+<div class="caja"><h2>Pedidos de tu tienda web por confirmar</h2>
+<table>{% for v in pendientes %}<tr><td><a href="{% url 'venta_detalle' v.id %}">#{{ v.id }}</a></td><td>{{ v.cliente }} · {{ v.contacto }}</td><td class="der">{{ v.total|pesos }}</td></tr>{% endfor %}</table></div>
+{% endif %}
+
+<div class="caja">
+    <h2>Indicadores en moneda local</h2>
+    {% if indicadores %}
+        <span class="etq">Dólar: {{ indicadores.dolar|floatformat:2 }} CLP</span>
+        <span class="etq">UF: {{ indicadores.uf|floatformat:2 }} CLP</span>
+        <span class="nota">Fuente: mindicador.cl · {{ indicadores.fecha }}. Útil para decidir compras a distribuidoras que facturan en dólares o UF.</span>
+    {% else %}<p class="nota">Los indicadores (dólar y UF) no están disponibles ahora: sin conexión a internet. El resto de la app funciona normal.</p>{% endif %}
+</div>
+{% endblock %}

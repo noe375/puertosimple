@@ -1,0 +1,20 @@
+{% load static formatos %}<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ c.nombre }}</title><link rel="stylesheet" href="{% static 'css/estilo.css' %}"></head>
+<body><div class="publica">
+<div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
+{% if c.logo %}<img src="{{ c.logo.url }}" alt="Logo" style="width:70px;height:70px;border-radius:12px;object-fit:cover">{% endif %}
+<div><h1>{{ c.nombre }}</h1><span class="nota">{{ c.get_tipo_comercio_display }} · {{ c.region }}{% if c.telefono %} · 📞 {{ c.telefono }}{% endif %}{% if c.email %} · ✉ {{ c.email }}{% endif %}</span></div></div>
+{% for m in messages %}<div class="mensaje {{ m.tags }}">{{ m }}</div>{% endfor %}
+<form method="post">{% csrf_token %}
+<div class="caja"><h2>Nuestros productos</h2>
+<table><tr><th>Producto</th><th class="der">Precio</th><th>Disponibilidad</th><th>Cantidad</th></tr>
+{% for p in productos %}<tr><td>{{ p.nombre }}<br><span class="nota">{{ p.descripcion }}</span></td><td class="der">{{ p.precio|pesos }}</td>
+<td>{% if p.stock_actual <= 0 %}<span class="etq bajo">Agotado</span>{% elif p.bajo_minimo %}<span class="etq pendiente">Últimas unidades</span>{% else %}<span class="etq ok">Disponible</span>{% endif %}</td>
+<td>{% if p.stock_actual > 0 %}<input type="number" name="cantidad_{{ p.id }}" value="0" min="0" max="{{ p.stock_actual }}">{% endif %}</td></tr>
+{% empty %}<tr><td class="nota">Pronto tendremos productos disponibles.</td></tr>{% endfor %}</table></div>
+{% if productos %}<div class="caja"><h2>Hacer un pedido</h2><p class="nota">Elige las cantidades y déjanos tus datos: te contactaremos para coordinar el pago y la entrega.</p>
+<div class="campo"><label>Tu nombre</label><input type="text" name="cliente" required></div>
+<div class="campo"><label>Teléfono o correo</label><input type="text" name="contacto" required></div>
+<button class="btn acento" type="submit">Enviar pedido</button></div>{% endif %}
+</form></div></body></html>

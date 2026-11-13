@@ -1,0 +1,23 @@
+{% extends "tienda/base.html" %}{% load formatos %}
+{% block titulo %}Alertas de stock{% endblock %}
+{% block contenido %}
+<h1>Alertas de stock</h1><p class="sub">Se generan solas cuando un producto baja de su mínimo. Repón a tiempo para no perder ventas.</p>
+{% for a in alertas %}
+<div class="caja" style="border:2px solid #e0a800">
+    <h2>⚠ {{ a.producto.nombre }} quedó bajo el mínimo</h2>
+    <p>Quedan <b>{{ a.producto.stock_actual }}</b> unidades y el mínimo es {{ a.producto.stock_minimo }} (objetivo: {{ a.producto.objetivo }}). Alerta creada el {{ a.fecha_creacion|date:"d/m H:i" }}.</p>
+    <form method="post" action="{% url 'reponer' %}" class="filtros">{% csrf_token %}<input type="hidden" name="producto" value="{{ a.producto.id }}">
+        <label>Cantidad sugerida <input type="number" name="cantidad" value="{{ a.producto.sugerido }}" min="1"></label>
+        <label>Proveedor <input type="text" name="proveedor" placeholder="Ej: Distribuidora Costa" required></label>
+        <span class="nota">Costo estimado: {% widthratio a.producto.sugerido 1 a.producto.costo as est %}{{ est|pesos }}</span>
+        <button class="btn primario" type="submit">Crear solicitud de reposición</button></form>
+</div>
+{% empty %}<div class="mensaje success">No hay alertas activas. Todo el inventario está sobre el mínimo. ✔</div>{% endfor %}
+{% if solicitudes %}<div class="caja"><h2>Solicitudes de reposición pendientes</h2>
+<table><tr><th>Producto</th><th>Proveedor</th><th class="der">Cantidad</th><th class="der">Costo estimado</th><th></th></tr>
+{% for s in solicitudes %}<tr><td>{{ s.producto.nombre }}</td><td>{{ s.proveedor }}</td><td class="der">{{ s.cantidad }}</td><td class="der">{{ s.costo_estimado|pesos }}</td>
+<td><form method="post" style="display:flex;gap:6px">{% csrf_token %}
+<button class="btn chico primario" formaction="{% url 'solicitud_accion' s.id 'recibida' %}">Ya llegó (sumar al stock)</button>
+<button class="btn chico peligro" formaction="{% url 'solicitud_accion' s.id 'cancelar' %}">Cancelar</button></form></td></tr>{% endfor %}</table></div>{% endif %}
+{% if resueltas %}<div class="caja"><h2>Alertas resueltas recientemente</h2>{% for a in resueltas %}<div class="prod"><span>{{ a.producto.nombre }}</span><span class="nota">{{ a.fecha_resolucion|date:"d/m H:i" }}</span></div>{% endfor %}</div>{% endif %}
+{% endblock %}

@@ -1,0 +1,10 @@
+{% load formatos %}<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Comprobante #{{ venta.id }}</title>
+<style>@media print{.no-imprimir{display:none}} body{font-family:Arial;max-width:420px;margin:30px auto} table{width:100%;border-collapse:collapse} td,th{padding:5px;border-bottom:1px dashed #bbb;text-align:left} .d{text-align:right}</style></head>
+<body><h2 style="text-align:center;margin-bottom:0">{{ venta.comercio.nombre }}</h2>
+<p style="text-align:center;margin-top:2px">{% if venta.comercio.rut %}RUT {{ venta.comercio.rut }}<br>{% endif %}{{ venta.comercio.telefono }}</p>
+<p>Comprobante de venta N° {{ venta.id }}<br>{{ venta.fecha_hora|date:"d/m/Y H:i" }} · {{ venta.get_metodo_pago_display }}{% if venta.cliente %}<br>Cliente: {{ venta.cliente }}{% endif %}</p>
+<table><tr><th>Producto</th><th>Cant.</th><th class="d">Subtotal</th></tr>
+{% for d in venta.detalles.all %}<tr><td>{{ d.producto.nombre }}</td><td>{{ d.cantidad }}</td><td class="d">{{ d.subtotal|pesos }}</td></tr>{% endfor %}
+<tr><td colspan="2"><b>TOTAL</b></td><td class="d"><b>{{ venta.total|pesos }}</b></td></tr></table>
+<p style="text-align:center">¡Gracias por tu compra!</p>
+<p class="no-imprimir" style="text-align:center"><button onclick="window.print()">Imprimir / guardar como PDF</button></p></body></html>

@@ -1,0 +1,19 @@
+{% extends "tienda/base.html" %}
+{% block titulo %}Revisar carga{% endblock %}
+{% block contenido %}
+<h1>Revisa los productos de la factura</h1>
+<p class="sub">Archivo: {{ carga.nombre_archivo }}. Corrige lo que haga falta y escribe el <b>precio de venta</b> de cada producto nuevo: con eso se calculará tu ganancia.</p>
+{% for e in errores %}<div class="mensaje error">{{ e }}</div>{% endfor %}
+<form method="post"><div class="caja" style="overflow:auto">{% csrf_token %}
+<table><tr><th>Incluir</th><th>Código</th><th>Producto</th><th>Cantidad</th><th>Costo unitario ($)</th><th>Precio de venta ($)</th><th>Acción</th></tr>
+{% for d in detalles %}<tr>
+<td><input type="checkbox" name="incluir_{{ d.id }}" {% if d.incluir %}checked{% endif %}></td>
+<td><input type="text" name="sku_{{ d.id }}" value="{{ d.sku }}" size="8"></td>
+<td><input type="text" name="nombre_{{ d.id }}" value="{{ d.nombre }}" size="28"></td>
+<td><input type="number" name="cantidad_{{ d.id }}" value="{{ d.cantidad }}" min="0"></td>
+<td><input type="number" name="costo_{{ d.id }}" value="{{ d.costo_unitario }}" min="0"></td>
+<td><input type="number" name="precio_{{ d.id }}" value="{{ d.precio_venta|default_if_none:'' }}" min="0" placeholder="obligatorio si es nuevo"></td>
+<td>{% if d.producto %}<span class="etq ok">Actualiza stock</span>{% elif d.nombre %}<span class="etq pendiente">Producto nuevo</span>{% else %}<span class="nota">Fila libre</span>{% endif %}</td></tr>{% endfor %}</table></div>
+<button class="btn acento" type="submit">Confirmar e ingresar al inventario</button>
+<button class="btn peligro" name="accion" value="cancelar" type="submit">Cancelar carga</button></form>
+{% endblock %}
